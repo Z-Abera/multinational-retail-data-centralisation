@@ -2,6 +2,9 @@ from database_utils import DatabaseConnector as dconnect
 from data_cleaning import DataCleaning as dclean
 import pandas as pd
 import tabula
+import requests
+import numpy as np
+
 #Develop a method inside your DataExtractor class to read the data from the RDS database.
 class DataExtractor:
     def __init___(self, file_name):
@@ -43,19 +46,102 @@ class DataExtractor:
         except Exception as e:
             print(f"Error extracting data from PDF: {str(e)}")
             return pd.DataFrame()
+    def list_number_of_stores(self, endpoint, headers):
+        """
+        Retrieve the number of stores to extract from a web API.
+
+        Parameters:
+        - endpoint: The API endpoint that provides the number of stores information.
+        - headers: A dictionary containing any required headers for the API request.
+
+        Returns:
+        - Number of stores to extract (integer).
+        """
+        try:
+            # Make a GET request to the API endpoint
+            response = requests.get(endpoint, headers=headers)
+
+            # Check if the request was successful (status code 200)
+            if response.status_code == 200:
+                # the API response is in JSON format and contains the number of stores information
+                data = response.json()
+                print(data)
+
+                # Extract the number of stores from the API response
+                num_stores = data.get('number_stores', 0)
+
+                return num_stores
+            else:
+                print(f"Error retrieving number of stores. Status code: {response.status_code}")
+                return 0
+
+        except Exception as e:
+            print(f"Error retrieving number of stores: {str(e)}")
+            return 0
+    def retrieve_stores_data(self, endpoint, headers):
+        """
+        Retrieve the stores data, given a store number from a web API.
+
+        Parameters:
+        - endpoint: The API endpoint that provides the store information.
+        - headers: A dictionary containing any required headers for the API request.
+
+        Returns:
+        - dataframe.
+        """
+        try:
+            df = pd.DataFrame()
+            list = []
+            for i in range(0,10):
+                # Make a GET request to the API endpoint
+                print(i)
+                response = requests.get(endpoint+str(i), headers=headers)
+
+                # Check if the request was successful (status code 200)
+                if response.status_code == 200:
+                    # the API response is in JSON format and contains the number of stores information
+                    data = response.json()
+                    print(data)
+                    print(type(data))
+                    # convert each dictionary to a dataframe
+                    store_df = pd.DataFrame(data, index=[np.NaN])
+                    # append dict to list
+                    list.append(store_df)
+                    #print(list)
+                else:
+                    print(f"Error retrieving store data. Status code: {response.status_code}")
+            # convert list of dictionaries into a dataframe
+            print('before printing list')
+            print(list)
+            df = pd.DataFrame([list]) 
+            print(df)
+            return df
+        except Exception as e:
+            print(f"Error retrieving store data: {str(e)}")
+            return 0
+
 
 fileName = "/Users/zafuabera/Documents/code/AiCoreEngineering/multinational-retail-data-centralisation/db_creds.yaml"
 de = DataExtractor()
+
+headers = {'x-api-key': 'yFBQbwXe9J3sd6zWVAMrK6lcxxr0q1lr2PT6DDMX'}
+endpoint = 'https://aqj7u5id95.execute-api.eu-west-1.amazonaws.com/prod/store_details/'
+df = de.retrieve_stores_data(endpoint, headers)
+print(df.head(5))
+
 #yaml_object = dconnect.read_db_creds(fileName)
 #engine_1 = dconnect.init_db_engine(yaml_object)
 #db_list = dconnect.list_db_tables(engine_1)
 #df = de.read_dbs_method(fileName)
 #df = dclean.clean_user_data(df)
 #dconnect.upload_to_db(df,'dim_users')
-pdf_link = "/Users/zafuabera/Downloads/card_details.pdf"
-card_data = de.retrieve_pdf_data(pdf_link)
-print(card_data)
-card_data = dclean.clean_card_data(card_data)
-dconnect.upload_to_db(card_data,'dim_card_details')
+#pdf_link = "/Users/zafuabera/Downloads/card_details.pdf"
+#card_data = de.retrieve_pdf_data(pdf_link)
+#card_data = dclean.clean_card_data(card_data)
+#dconnect.upload_to_db(card_data,'dim_card_details')
+#endpoint = 'https://aqj7u5id95.execute-api.eu-west-1.amazonaws.com/prod/number_stores'
+#headers = {'x-api-key': 'yFBQbwXe9J3sd6zWVAMrK6lcxxr0q1lr2PT6DDMX'}
+#num_stores = de.list_number_of_stores(endpoint, headers)
+#print(num_stores)
 
 
