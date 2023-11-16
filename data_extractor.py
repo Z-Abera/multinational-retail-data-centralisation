@@ -122,7 +122,7 @@ class DataExtractor:
         except Exception as e:
             print(f"Error retrieving store data: {str(e)}")
             return 0
-        
+    @classmethod
     def _parse_s3_address(self, s3_address):
         """
         Parse the S3 address into bucket name and object key.
@@ -138,7 +138,7 @@ class DataExtractor:
         bucket_name = s3_parts[0]
         object_key = '/'.join(s3_parts[1:])
         return bucket_name, object_key
-        
+    @classmethod   
     def extract_from_s3(self, address):
         try:
              # Split the S3 address into bucket name and object key
@@ -174,7 +174,13 @@ df = de.extract_from_s3(address)
 #print(df.head(10))
 #print(df.info())
 #print(df.describe())
-dclean.convert_product_weights(df)
+products_data = dclean.convert_product_weights(df)
+print(products_data.head(5))
+print(products_data.info())
+print(products_data.describe())
+dclean.clean_products_data(products_data)
+dconnect.upload_to_db(products_data,'dim_products')
+
 #print('after converting the weight values')
 #print(df['weight'].head(5))
 

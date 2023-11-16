@@ -84,7 +84,7 @@ class DataCleaning:
         except Exception as e:
             print(f"Error cleaning store data: {str(e)}")
             return pd.DataFrame()
-        
+    @classmethod
     def convert_product_weights(self, products_data):
         """
         Clean and convert the weights in the products DataFrame to a standardized format (e.g., kg).
@@ -104,14 +104,15 @@ class DataCleaning:
             # Clean and convert the 'weight' column
             cleaned_df['weight'] = cleaned_df['weight'].apply(self._clean_and_convert_weight)
             print('before returning convert_products_weight and returning')
+            print(cleaned_df['weight'].head(5))
 
             return cleaned_df
 
         except Exception as e:
             print(f"Error converting product weights: {str(e)}")
             return pd.DataFrame()
-    
-    def _clean_and_convert_weight(weight_str):
+    @classmethod
+    def _clean_and_convert_weight(self, weight_str):
         """
         Clean and convert a single weight string to a standardized format (e.g., kg).
 
@@ -132,15 +133,50 @@ class DataCleaning:
             weight_value = float(numeric_values[0])
 
             # Check for unit indicators and convert to kg
-            if 'g' in weight_str.lower():
+            if 'g' in weight_str.lower() and 'k' not in weight_str.lower():
                 # Convert grams to kilograms
                 weight_value /= 1000
             elif 'ml' in weight_str.lower():
                 # Use a 1:1 ratio for ml to g (rough estimate), then convert to kilograms
+                print('print value that contains for ml')
+                print(weight_str.lower())
                 weight_value /= 1000
+                print('print new value')
+                print(weight_value)
+                print(type(weight_value))
 
             return weight_value
 
         except Exception as e:
             print(f"Error cleaning and converting weight: {str(e)}")
             return None
+    
+    def clean_products_data(products_data):
+        """
+        Clean product data by removing erroneous values, handling NULL values, and addressing formatting errors.
+
+        Parameters:
+        - products_data: Pandas DataFrame containing card data.
+
+        Returns:
+        - Cleaned Pandas DataFrame.
+        """
+        try:
+            
+            # Drop rows with NULL values
+            products_data = products_data.dropna(how = 'all')
+
+            #check that the weight and latitude is numerical
+            numeric_cols = ['weight']
+            products_data[numeric_cols] = products_data[numeric_cols].apply(pd.to_numeric, errors='coerce')
+
+            # Convert date_payment to be in the same format
+            products_data['date_added'] = pd.to_datetime(products_data['date_added'], errors='coerce')
+            products_data['date_added'] = products_data['date_added'].dt.strftime('%Y-%m-%d').astype(int)
+      
+
+            return products_data
+
+        except Exception as e:
+            print(f"Error cleaning products data: {str(e)}")
+            return pd.DataFrame()
