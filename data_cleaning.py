@@ -1,5 +1,6 @@
 from dateutil.parser import parse
 import pandas as pd
+import re
 class DataCleaning:
     #Create a method called clean_user_data in the DataCleaning class which will perform the cleaning of the user data.
     #You will need clean the user data, look out for NULL values, errors with dates, incorrectly typed values and rows filled with the wrong information.
@@ -51,7 +52,95 @@ class DataCleaning:
             card_data['expiry_date'] = card_data['expiry_date'].dt.strftime('%m-%Y')
 
             return card_data
-
+        
         except Exception as e:
             print(f"Error cleaning card data: {str(e)}")
             return pd.DataFrame()
+        
+    def clean_store_data(store_data):
+        """
+        Clean store data by removing erroneous values, handling NULL values, and addressing formatting errors.
+
+        Parameters:
+        - store_data: Pandas DataFrame containing card data.
+
+        Returns:
+        - Cleaned Pandas DataFrame.
+        """
+        try:
+            
+            # Drop rows with NULL values
+            store_data = store_data.dropna(how = 'all')
+
+            #check that the longitude and latitude is numerical
+            numeric_cols = ['longitude', 'latitude', 'lat']
+            store_data[numeric_cols] = store_data[numeric_cols].apply(pd.to_numeric, errors='coerce')
+
+            #remove lat column as it is null
+            store_data = store_data.drop('lat', axis=1)       
+
+            return store_data
+
+        except Exception as e:
+            print(f"Error cleaning store data: {str(e)}")
+            return pd.DataFrame()
+        
+    def convert_product_weights(self, products_data):
+        """
+        Clean and convert the weights in the products DataFrame to a standardized format (e.g., kg).
+
+        Parameters:
+        - products_df: Pandas DataFrame containing product data.
+
+        Returns:
+        - Cleaned Pandas DataFrame.
+        """
+        try:
+            # Make a copy of the DataFrame to avoid modifying the original
+            cleaned_df = products_data.copy()
+            print('CLEANED_DF after making the copy')
+            print(cleaned_df['weight'].head(5))
+
+            # Clean and convert the 'weight' column
+            cleaned_df['weight'] = cleaned_df['weight'].apply(self._clean_and_convert_weight)
+            print('before returning convert_products_weight and returning')
+
+            return cleaned_df
+
+        except Exception as e:
+            print(f"Error converting product weights: {str(e)}")
+            return pd.DataFrame()
+    
+    def _clean_and_convert_weight(weight_str):
+        """
+        Clean and convert a single weight string to a standardized format (e.g., kg).
+
+        Parameters:
+        - weight_str: String representing the weight.
+
+        Returns:
+        - Float representing the converted weight.
+        """
+        try:
+            # Extract numeric values from the string
+            numeric_values = re.findall(r'\d+\.?\d*', str(weight_str))
+
+            if not numeric_values:
+                return None
+
+            # Convert to float
+            weight_value = float(numeric_values[0])
+
+            # Check for unit indicators and convert to kg
+            if 'g' in weight_str.lower():
+                # Convert grams to kilograms
+                weight_value /= 1000
+            elif 'ml' in weight_str.lower():
+                # Use a 1:1 ratio for ml to g (rough estimate), then convert to kilograms
+                weight_value /= 1000
+
+            return weight_value
+
+        except Exception as e:
+            print(f"Error cleaning and converting weight: {str(e)}")
+            return None
