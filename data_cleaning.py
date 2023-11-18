@@ -1,16 +1,14 @@
 from dateutil.parser import parse
 import pandas as pd
+import numpy as np
 import re
+from dateutil.parser import parse
 class DataCleaning:
     #Create a method called clean_user_data in the DataCleaning class which will perform the cleaning of the user data.
     #You will need clean the user data, look out for NULL values, errors with dates, incorrectly typed values and rows filled with the wrong information.
     def __init___(self):
         self.val = val
     def clean_user_data(df):
-        # get dataframe
-        # look for null values
-        #fileName = "/Users/zafuabera/Documents/code/AiCoreEngineering/multinational-retail-data-centralisation/db_creds.yaml"
-        #df = dextract.read_dbs_method(fileName)
         # drop na if all values in the row are na
         df.dropna(how = 'all') 
         # update the dates
@@ -154,29 +152,58 @@ class DataCleaning:
     def clean_products_data(products_data):
         """
         Clean product data by removing erroneous values, handling NULL values, and addressing formatting errors.
-
         Parameters:
         - products_data: Pandas DataFrame containing card data.
-
         Returns:
         - Cleaned Pandas DataFrame.
         """
-        try:
-            
+        try: 
             # Drop rows with NULL values
-            products_data = products_data.dropna(how = 'all')
-
-            #check that the weight and latitude is numerical
+            products_data = products_data.dropna(how = 'any')
+            #check that the weight is numerical
             numeric_cols = ['weight']
             products_data[numeric_cols] = products_data[numeric_cols].apply(pd.to_numeric, errors='coerce')
-
             # Convert date_payment to be in the same format
-            products_data['date_added'] = pd.to_datetime(products_data['date_added'], errors='coerce')
-            products_data['date_added'] = products_data['date_added'].dt.strftime('%Y-%m-%d').astype(int)
-      
-
+            ## need to use the parse function from the dateutil library, in conjunction with the .apply method to format
+            ## the date '2018 October 22' correctly
+            #products_data['date_added'] = pd.to_datetime(products_data['date_added'], errors='coerce')
+            #products_data['date_added'] = products_data['date_added'].dt.strftime('%Y-%m-%d')
+            print(products_data.info())
+            print('before parsing')
+            #dff = products_data['date_added'].select_dtypes(include=[np.float])
+            #print(dff)
+            date_format = "%yyyy%mm%dd"
+            #Drop errorenous rows
+            print(products_data.shape)
+            products_data = products_data[products_data.date_added != 'CCAVRB79VV']
+            products_data = products_data[products_data.date_added != '09KREHTMWL']
+            products_data = products_data[products_data.date_added != 'PEPWA0NCVH']
+            print(products_data.shape)
+            #pd.to_datetime(products_data["date_added"], format='mixed')
+            products_data['date_added'] = products_data['date_added'].apply(parse)
+            products_data['date_added'] = pd.to_datetime(products_data['date_added'], errors='coerce', format='mixed')
+            
             return products_data
 
         except Exception as e:
             print(f"Error cleaning products data: {str(e)}")
             return pd.DataFrame()
+    def clean_orders_data(orders_data):
+        #remove column 1 as it is null
+        orders_data = orders_data.drop('1', axis=1) 
+        # remove the columns, first_name, last_name as they repeat in the table
+        # axis =1 is column , axis=0 for rows
+        orders_data = orders_data.drop('first_name', axis=1) 
+        orders_data = orders_data.drop('last_name', axis=1) 
+        return orders_data
+    
+    def clean_date_times_data(date_times):
+        date_times = date_times.dropna(how = 'all')
+        numeric_cols = ['month', 'year', 'day']
+        date_times[numeric_cols] = date_times[numeric_cols].apply(pd.to_numeric, errors='coerce')
+        date_times = date_times[date_times.timestamp != 'SAAZHF87TI']  
+        date_times = date_times[date_times.timestamp != '75E4ECDVH6']  
+        date_times = date_times[date_times.timestamp != 'NULL']  
+        date_times = date_times[date_times.timestamp != 'JUVMW8TKUC'] 
+        date_times = date_times[date_times.timestamp != 'J8CSDZCCRZ'] 
+        return date_times

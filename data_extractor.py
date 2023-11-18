@@ -8,6 +8,7 @@ import numpy as np
 import boto3
 import ntpath
 import sys
+from sqlalchemy import create_engine
 from botocore.exceptions import NoCredentialsError, ClientError
 from boto3.exceptions import S3UploadFailedError
 
@@ -16,7 +17,7 @@ class DataExtractor:
     def __init___(self, file_name):
         self.file_name = file_name
     @classmethod
-    def read_dbs_method(self, file_name):
+    def read_dbs_method(self, file_name, table_name):
         # It will take in an instance of your DatabaseConnector class and the table name as an argument and return a pandas DataFrame.
         # Use your list_db_tables method to get the name of the table containing user data.
         # Use the read_rds_table method to extract the table containing user data and return a pandas DataFrame.
@@ -25,7 +26,7 @@ class DataExtractor:
         engine = dconnect.init_db_engine(yaml_object)
         db_list = dconnect.list_db_tables(engine)   
         engine.execution_options(isolation_level='AUTOCOMMIT').connect()
-        df = pd.read_sql_query('select * from "legacy_users"',con=engine)
+        df = pd.read_sql_query('select * from '+table_name,con=engine)
         engine.dispose()
         engine.clear_compiled_cache()
         print(df.head())
@@ -139,7 +140,7 @@ class DataExtractor:
         object_key = '/'.join(s3_parts[1:])
         return bucket_name, object_key
     @classmethod   
-    def extract_from_s3(self, address):
+    def extract_from_s3(self, address, type):
         try:
              # Split the S3 address into bucket name and object key
             bucket_name, object_key = self._parse_s3_address(address)
@@ -150,11 +151,17 @@ class DataExtractor:
             # Download the object from S3
             response = s3_client.get_object(Bucket=bucket_name, Key=object_key)
             data = response['Body'].read().decode('utf-8')
+            print('the type of date is ')
+            #print(type(data))
 
             # Read the CSV data into a Pandas DataFrame
-            df = pd.read_csv(StringIO(data))
+            if type == 'csv':
+                df = pd.read_csv(StringIO(data))
+            else:
+                #assume json
+                df = pd.read_json(StringIO(data))
             #print(df['weight'].head(5))
-            #print(df.head(5))
+            print(df.head(5))
             return df
         except NoCredentialsError:
             print("AWS credentials not found. Please configure your credentials.")
@@ -168,18 +175,31 @@ class DataExtractor:
 
 fileName = "/Users/zafuabera/Documents/code/AiCoreEngineering/multinational-retail-data-centralisation/db_creds.yaml"
 de = DataExtractor()
-address = 's3://data-handling-public/products.csv'
-df = de.extract_from_s3(address)
+#milestone 2 Task 8
+url = 's3://data-handling-public/date_details.json'
+df = de.extract_from_s3(url, 'json')
+df = dclean.clean_date_times_data(df)
+print('before printing the df')
+dconnect.upload_to_db(df,'dim_date_times')
+# milestone 2 Task 7 
+#orders_table = de.read_dbs_method(fileName, "orders_table")
+#orders_table = dclean.clean_orders_data(orders_table)
+#dconnect.upload_to_db(orders_table,'orders_table')
+
+
+#Task 6
+#address = 's3://data-handling-public/products.csv'
+#df = de.extract_from_s3(address)
 #print('after extracting from s3')
 #print(df.head(10))
 #print(df.info())
 #print(df.describe())
-products_data = dclean.convert_product_weights(df)
-print(products_data.head(5))
-print(products_data.info())
-print(products_data.describe())
-dclean.clean_products_data(products_data)
-dconnect.upload_to_db(products_data,'dim_products')
+#products_data = dclean.convert_product_weights(df)
+#print(products_data.head(5))
+#print(products_data.info())
+#print(products_data.describe())
+#products_data = dclean.clean_products_data(products_data)
+#dconnect.upload_to_db(products_data,'dim_products')
 
 #print('after converting the weight values')
 #print(df['weight'].head(5))

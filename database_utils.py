@@ -17,9 +17,12 @@ class DatabaseConnector:
     #Now create a method init_db_engine which will read the credentials from the return of read_db_creds and initialise and return an sqlalchemy database engine.
     @classmethod
     def init_db_engine(self, yaml_object):
-        #TO DO - construct the string programmatically from yaml file
-        engine = dbb.create_engine('postgresql://aicore_admin:AiCore2022@data-handling-project-readonly.cq2e8zno855e.eu-west-1.rds.amazonaws.com:5432/postgres')
-        #engine = db.create_engine('dialect+driver://user:pass@host:port/db')
+        host = yaml_object.get('RDS_HOST')
+        pwd = yaml_object.get('RDS_PASSWORD')
+        user = yaml_object.get('RDS_USER')
+        database = yaml_object.get('RDS_DATABASE')
+        port = str(yaml_object.get('RDS_PORT'))
+        engine = dbb.create_engine(f'postgresql://{user}:{pwd}@{host}:{port}/{database}')
         return engine
     #Using the engine from init_db_engine create a method list_db_tables to list all the tables in the database so you know which tables you can extract data from.
     @classmethod
@@ -68,7 +71,7 @@ class DatabaseConnector:
 
 fileName = "/Users/zafuabera/Documents/code/AiCoreEngineering/multinational-retail-data-centralisation/db_creds.yaml"
 db = DatabaseConnector()
-#yaml_object = db.read_db_creds(fileName)
-#engine_1 = db.init_db_engine(yaml_object)
+yaml_object = db.read_db_creds(fileName)
+engine_1 = db.init_db_engine(yaml_object)
 #db_list = db.list_db_tables(engine_1)
 #print(db_list)
