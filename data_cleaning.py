@@ -39,8 +39,8 @@ class DataCleaning:
             card_data = card_data.dropna(how = 'all')
 
             #check that the date_payment_confirmed and expiry_date and card_number is numerical
-            numeric_cols = ['date_payment_confirmed', 'expiry_date', 'card_number']
-            card_data[numeric_cols] = card_data[numeric_cols].apply(pd.to_numeric, errors='coerce')
+            #numeric_cols = ['date_payment_confirmed', 'expiry_date', 'card_number']
+            #card_data[numeric_cols] = card_data[numeric_cols].apply(pd.to_numeric, errors='coerce')
 
             # Convert date_payment to be in the same format
             card_data['date_payment_confirmed'] = pd.to_datetime(card_data['date_payment_confirmed'], errors='coerce')
@@ -48,7 +48,12 @@ class DataCleaning:
 
             card_data['expiry_date'] = pd.to_datetime(card_data['expiry_date'], errors='coerce')
             card_data['expiry_date'] = card_data['expiry_date'].dt.strftime('%m-%Y')
+            print(card_data.shape)
+            card_data = card_data.drop_duplicates(subset=['card_number'])
+            print('after clearing duplicates')
+            print(card_data.shape)
 
+            print(card_data.head(10))
             return card_data
         
         except Exception as e:
@@ -68,14 +73,11 @@ class DataCleaning:
         try:
             
             # Drop rows with NULL values
-            store_data = store_data.dropna(how = 'all')
+            store_data = store_data.dropna(how = 'all') # hashed out due to milestone 3 task 3
 
             #check that the longitude and latitude is numerical
-            numeric_cols = ['longitude', 'latitude', 'lat']
-            store_data[numeric_cols] = store_data[numeric_cols].apply(pd.to_numeric, errors='coerce')
-
-            #remove lat column as it is null
-            store_data = store_data.drop('lat', axis=1)       
+            #numeric_cols = ['longitude', 'latitude']
+            #store_data[numeric_cols] = store_data[numeric_cols].apply(pd.to_numeric, errors='coerce')      
 
             return store_data
 

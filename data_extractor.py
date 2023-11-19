@@ -13,6 +13,7 @@ from botocore.exceptions import NoCredentialsError, ClientError
 from boto3.exceptions import S3UploadFailedError
 
 #Develop a method inside your DataExtractor class to read the data from the RDS database.
+# TO DO: modularise the cleaning actions and make them general for all databases
 class DataExtractor:
     def __init___(self, file_name):
         self.file_name = file_name
@@ -175,12 +176,27 @@ class DataExtractor:
 
 fileName = "/Users/zafuabera/Documents/code/AiCoreEngineering/multinational-retail-data-centralisation/db_creds.yaml"
 de = DataExtractor()
-#milestone 2 Task 8
+"""
+
+headers = {'x-api-key': 'yFBQbwXe9J3sd6zWVAMrK6lcxxr0q1lr2PT6DDMX'}
+endpoint = 'https://aqj7u5id95.execute-api.eu-west-1.amazonaws.com/prod/store_details/'
+df = de.retrieve_stores_data(endpoint, headers)
+
+df = dclean.clean_store_data(df)
+dconnect.upload_to_db(df,'dim_store_details')
+
+"""
+# milestone 3 Task 1
+
+
+
+"""milestone 2 Task 8
 url = 's3://data-handling-public/date_details.json'
 df = de.extract_from_s3(url, 'json')
 df = dclean.clean_date_times_data(df)
 print('before printing the df')
 dconnect.upload_to_db(df,'dim_date_times')
+"""
 # milestone 2 Task 7 
 #orders_table = de.read_dbs_method(fileName, "orders_table")
 #orders_table = dclean.clean_orders_data(orders_table)
@@ -189,7 +205,7 @@ dconnect.upload_to_db(df,'dim_date_times')
 
 #Task 6
 #address = 's3://data-handling-public/products.csv'
-#df = de.extract_from_s3(address)
+#df = de.extract_from_s3(address, 'csv')
 #print('after extracting from s3')
 #print(df.head(10))
 #print(df.info())
@@ -221,13 +237,23 @@ print(df.describe())
 #df = de.read_dbs_method(fileName)
 #df = dclean.clean_user_data(df)
 #dconnect.upload_to_db(df,'dim_users')
-#pdf_link = "/Users/zafuabera/Downloads/card_details.pdf"
-#card_data = de.retrieve_pdf_data(pdf_link)
-#card_data = dclean.clean_card_data(card_data)
-#dconnect.upload_to_db(card_data,'dim_card_details')
+pdf_link = "/Users/zafuabera/Downloads/card_details.pdf"
+card_data = de.retrieve_pdf_data(pdf_link)
+card_data = dclean.clean_card_data(card_data)
+dconnect.upload_to_db(card_data,'dim_card_details')
 #endpoint = 'https://aqj7u5id95.execute-api.eu-west-1.amazonaws.com/prod/number_stores'
 #headers = {'x-api-key': 'yFBQbwXe9J3sd6zWVAMrK6lcxxr0q1lr2PT6DDMX'}
 #num_stores = de.list_number_of_stores(endpoint, headers)
 #print(num_stores)
 
-
+"""
+-- Alter the table to change data types
+-- Assuming UUID is a standard UUID type, and VARCHAR length is 255 for card_number, store_code, and product_code
+ALTER TABLE orders_table
+    ALTER COLUMN date_uuid TYPE UUID USING date_uuid::UUID,
+    ALTER COLUMN user_uuid TYPE UUID USING user_uuid::UUID,
+    ALTER COLUMN card_number TYPE VARCHAR(255),
+    ALTER COLUMN store_code TYPE VARCHAR(255),
+    ALTER COLUMN product_code TYPE VARCHAR(255),
+    ALTER COLUMN product_quantity TYPE SMALLINT;
+    """
