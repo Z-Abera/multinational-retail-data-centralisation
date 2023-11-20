@@ -198,9 +198,9 @@ print('before printing the df')
 dconnect.upload_to_db(df,'dim_date_times')
 """
 # milestone 2 Task 7 
-#orders_table = de.read_dbs_method(fileName, "orders_table")
-#orders_table = dclean.clean_orders_data(orders_table)
-#dconnect.upload_to_db(orders_table,'orders_table')
+orders_table = de.read_dbs_method(fileName, "orders_table")
+orders_table = dclean.clean_orders_data(orders_table)
+dconnect.upload_to_db(orders_table,'orders_table')
 
 
 #Task 6
@@ -237,10 +237,10 @@ print(df.describe())
 #df = de.read_dbs_method(fileName)
 #df = dclean.clean_user_data(df)
 #dconnect.upload_to_db(df,'dim_users')
-pdf_link = "/Users/zafuabera/Downloads/card_details.pdf"
-card_data = de.retrieve_pdf_data(pdf_link)
-card_data = dclean.clean_card_data(card_data)
-dconnect.upload_to_db(card_data,'dim_card_details')
+#pdf_link = "/Users/zafuabera/Downloads/card_details.pdf"
+#card_data = de.retrieve_pdf_data(pdf_link)
+#card_data = dclean.clean_card_data(card_data)
+#dconnect.upload_to_db(card_data,'dim_card_details')
 #endpoint = 'https://aqj7u5id95.execute-api.eu-west-1.amazonaws.com/prod/number_stores'
 #headers = {'x-api-key': 'yFBQbwXe9J3sd6zWVAMrK6lcxxr0q1lr2PT6DDMX'}
 #num_stores = de.list_number_of_stores(endpoint, headers)
