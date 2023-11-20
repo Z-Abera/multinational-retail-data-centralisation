@@ -13,6 +13,11 @@ Develop the star-based schema of the database, ensuring that the columns are of 
 The tables, dim_users_table, dim_store_details, dim_products, dim_date_times, dim_card_details were casted to the correct data types.
 Primary and foreign keys were created to link to the master table orders_table.
 """
+
+Milestone 4
+"""
+Derive business insights by obtaining key metrics that will support the business in decision making.
+"""
 #Installation instructions
 #Usage instructions
 #File structure of the project
