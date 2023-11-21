@@ -1,24 +1,15 @@
 # multinational-retail-data-centralisation
-#Table of Contents
-#A description of the project: what it does, the aim of the project, and what you learned
-""" The project objective is to centralised the sales data for an organisations. 
-    The data needs to be accessible by team members of the organisation. You work for a multinational company that sells various goods across the globe.
+## Objectives
 
-The first goal will be to produce a system that stores the current company data in a database so that it's accessed from one centralised location and acts as a single source of truth for sales data.
+The project objective is to centralised the sales data for an organisations. 
+The data needs to be accessible by team members of the organisation. You work for a multinational company that sells various goods across the globe.
 
-Then query the database to get up-to-date metrics for the business.
-
-Milestone 3 
-Develop the star-based schema of the database, ensuring that the columns are of the correct data types.
+The first goal will be to produce a system that stores the current company data in a database so that it's accessed from one centralised location and acts as a single source of truth for sales data. We used a postgresQL database to store the relevant database tables. Develop the star-based schema of the database, ensuring that the columns are of the correct data types.
 The tables, dim_users_table, dim_store_details, dim_products, dim_date_times, dim_card_details were casted to the correct data types.
-Primary and foreign keys were created to link to the master table orders_table.
-"""
+The five tables; dim_users_table, dim_store_details, dim_products, dim_date_times, dim_card_details will be linked to the central table orders_table.
 
-Milestone 4
-"""
-Derive business insights by obtaining key metrics that will support the business in decision making.
-"""
-#Installation instructions
-#Usage instructions
-#File structure of the project
-#License information
+After storing this data we can then obtain some key metrics that will drive business decisions. These queries can be found in 
+
+## Future work
+- Optimise the sql queries. 
+- modularise the metthods within data_cleaning so that there is less redundancy in the methods.

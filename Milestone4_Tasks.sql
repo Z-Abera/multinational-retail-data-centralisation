@@ -130,7 +130,7 @@ FROM
 INNER JOIN
  dim_date_times ON orders_table.date_uuid = cast(dim_date_times.date_uuid as text)
 )
-select year, avg(diff)
+select year, avg(diff) as actual_time_taken
 from baseData 
 group by year
 order by 1
